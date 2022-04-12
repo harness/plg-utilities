@@ -1,0 +1,6 @@
+VERSION
+.idea/
+coverage.out
+dist/
+vendor/
+.DS_Store
