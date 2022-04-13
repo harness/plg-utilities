@@ -22,20 +22,3 @@ type (
 		BlockForEvents bool   `mapstructure:"SEGMENT_BLOCK_FOR_EVENTS"`
 	}
 )
-
-//// Load loads the configuration from the environment.
-//func Load() (*Config, error) {
-//	viper.AddConfigPath(".")
-//	viper.SetConfigName("config")
-//	viper.SetConfigType("yaml")
-//
-//	viper.AutomaticEnv()
-//
-//	err := viper.ReadInConfig()
-//	if err != nil {
-//		return nil, err
-//	}
-//	cfg := Config{}
-//	err = viper.Unmarshal(&cfg)
-//	return &cfg, err
-//}

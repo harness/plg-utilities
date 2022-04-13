@@ -17,19 +17,7 @@ func RunJobs(config *config.Config) {
 		logrus.Fatalf("unable to connect to mongo db: %s", err.Error())
 	}
 
-	segmentSender, _ := segment.New(config.Segment, SegmentLogger{})
+	segmentSender, _ := segment.New(config.Segment, nil)
 
 	runAnalyticsUserCreate(mongo, segmentSender)
-}
-
-//Example logger implementation using logrus lib
-type SegmentLogger struct {
-}
-
-func (SegmentLogger) Logf(format string, args ...interface{}) {
-	logrus.Infof(format, args...)
-}
-
-func (SegmentLogger) Errorf(format string, args ...interface{}) {
-	logrus.Errorf(format, args...)
 }

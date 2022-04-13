@@ -19,7 +19,9 @@ type Segment struct {
 	// segment analytics client
 	client analytics.Client
 	// used to block and log for segment events
-	msgTracker segmentMsgTracker
+	msgTracker *segmentMsgTracker
+
+	block chan bool
 }
 
 // todo: make logger a constructor param and make it used by Logger and Callback func to log success + failures - done
@@ -30,26 +32,32 @@ type Segment struct {
 // todo: add unit tests
 // todo: create github + webhook triggers
 // todo: create deployment pipeline
+//todo: make sure code to synchronize events is good
 func New(config config.SegmentConf, logger Logger) (*Segment, error) {
-	analyticsConfig := analytics.Config{
-		Logger:  logger,
-		Verbose: true,
-		// todo: fix this callback should always be enabled for
-		// logging process + success + failures
-		//Callback: segmentMsgTracker{
-		//	logger: logger,
-		//}
+	if logger == nil {
+		logger = &DefaultSegmentLogger{}
 	}
 
 	// set up message tracker if segment messages
 	// should block until all events are sent to Segment
 	msgTracker := segmentMsgTracker{
 		logger: logger,
+		block:  false,
 	}
+
+	analyticsConfig := analytics.Config{
+		Logger:  logger,
+		Verbose: true,
+		// logging process + success + failures
+		Callback:  &msgTracker,
+		BatchSize: 1,
+	}
+
 	if config.BlockForEvents {
-		msgTracker.msgTracker = make(chan bool, 100)
+		//todo: make this not 10
+		msgTracker.MsgTracker = make(chan bool, 10)
 		msgTracker.block = true
-		analyticsConfig.Callback = msgTracker
+		analyticsConfig.Callback = &msgTracker
 	}
 
 	client, err := analytics.NewWithConfig(config.ApiKey, analyticsConfig)
@@ -61,7 +69,8 @@ func New(config config.SegmentConf, logger Logger) (*Segment, error) {
 	return &Segment{
 		enabled:    config.Enabled,
 		client:     client,
-		msgTracker: msgTracker,
+		msgTracker: &msgTracker,
+		block:      make(chan bool),
 	}, nil
 
 }
@@ -80,8 +89,9 @@ func (s *Segment) SendIdentifyEvent(identity string, traits map[string]interface
 		s.msgTracker.Add(msg)
 		s.client.Enqueue(msg)
 	}
-	//<-s.msgTracker.msgTracker
-	//close(s.msgTracker.msgTracker)
+
+	//<-s.MsgTracker.MsgTracker
+	//close(s.MsgTracker.MsgTracker)
 	return nil
 	//if !s.enabled {
 	//	logrus.Infof("skipping sending segment identify event for %s", identity)
@@ -129,7 +139,13 @@ func (s *Segment) SendTrackEvent(eventName, identity string, properties map[stri
 }
 
 func (s *Segment) Close() error {
-	return s.client.Close()
+	//return s.client.Close()
+	for {
+		fmt.Printf("ASDSADASFASDFSAFGSADFDSA\n")
+		if s.msgTracker.processed == s.msgTracker.queued {
+			return nil
+		}
+	}
 }
 
 func buildAnalyticsProperties(properties map[string]interface{}) analytics.Properties {
@@ -169,53 +185,48 @@ func buildAnalyticsTraits(traits map[string]interface{}) analytics.Traits {
 	return analyticsTraits
 }
 
-//type segmentLogger struct {
-//}
-//
-//func (segmentLogger) Logf(format string, args ...interface{}) {
-//	logrus.Infof(format, args...)
-//}
-//
-//func (segmentLogger) Errorf(format string, args ...interface{}) {
-//	logrus.Errorf(format, args...)
-//}
-
 type segmentMsgTracker struct {
 	// checks if current goroutine should be blocked
 	// if there are pending messages to be sent to Segment
 	block bool
 	// channel to keep track of messages and block current goroutine
-	msgTracker chan bool
+	MsgTracker chan bool
 	// used to log successfully and failed message sends to Segment
 	logger Logger
+
+	queued    int
+	processed int
 }
 
 // Add adds segment message to channel so that current goroutine will block
 // until message is read from msg channel
-func (s segmentMsgTracker) Add(message analytics.Message) {
-	fmt.Printf("hi add %d\n", len(s.msgTracker))
-	if s.block {
-		s.msgTracker <- true
-	}
-	s.logger.Logf("processing message: %v", message)
+func (s *segmentMsgTracker) Add(message analytics.Message) {
+	s.queued++
+	fmt.Printf("hi add %d %d %d\n", len(s.MsgTracker), s.queued, s.processed)
+	//if s.block {
+	//	s.MsgTracker <- true
+	//}
+	//s.logger.Logf("processing message: %v", message)
 }
 
 // Success blocks current goroutine until a message arrives to msg channel
 // and logs successful messages send to segment
-func (s segmentMsgTracker) Success(message analytics.Message) {
-	fmt.Printf("hi success%d\n", len(s.msgTracker))
-	if s.block {
-		<-s.msgTracker
-	}
-	s.logger.Logf("successfully sent message: %v", message)
+func (s *segmentMsgTracker) Success(message analytics.Message) {
+	s.processed++
+	fmt.Printf("hi success %d %d %d\n", len(s.MsgTracker), s.queued, s.processed)
+	//if s.block {
+	//	<-s.MsgTracker
+	//}
+	//s.logger.Logf("successfully sent message: %v", message)
 }
 
 // Failure blocks current goroutine until a message arrives to msg channel
 // and logs failures
-func (s segmentMsgTracker) Failure(message analytics.Message, err error) {
-	fmt.Printf("hi fail%d\n", len(s.msgTracker))
-	if s.block {
-		<-s.msgTracker
-	}
-	s.logger.Errorf("failed to send message: %v", message)
+func (s *segmentMsgTracker) Failure(message analytics.Message, err error) {
+	s.processed++
+	fmt.Printf("hi fail%d %d %d\n", len(s.MsgTracker), s.queued, s.processed)
+	//if s.block {
+	//	<-s.MsgTracker
+	//}
+	//s.logger.Errorf("failed to send message: %v", message)
 }
