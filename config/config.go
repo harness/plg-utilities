@@ -16,9 +16,9 @@ type (
 	}
 
 	SegmentConf struct {
-		Enabled        bool   `mapstructure:"SEGMENT_ENABLED"`
-		ApiKey         string `mapstructure:"SEGMENT_API_KEY"`
-		CertRequired   bool   `mapstructure:"SEGMENT_CERT_REQUIRED"`
-		BlockForEvents bool   `mapstructure:"SEGMENT_BLOCK_FOR_EVENTS"`
+		Enabled      bool   `mapstructure:"SEGMENT_ENABLED"`
+		ApiKey       string `mapstructure:"SEGMENT_API_KEY"`
+		CertRequired bool   `mapstructure:"SEGMENT_CERT_REQUIRED"`
+		Url          string `mapstructure:"SEGMENT_URL"`
 	}
 )

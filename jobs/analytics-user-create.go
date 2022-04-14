@@ -1,17 +1,20 @@
 package jobs
 
 import (
+	"fmt"
+	"gopkg.in/segmentio/analytics-go.v3"
 	"plg-utilities/core"
 	"plg-utilities/db/mongodb"
 	"plg-utilities/telemetry/segment"
+	"time"
 )
 
 //todo: add better logs
 //todo: pipeline for job using kubernetes
 //todo: env variables override in diff envs
 //todo: check if events being sent that are not shown in segment and show in amplitude
-func runAnalyticsUserCreate(mongo *mongodb.MongoDb, segmentSender *segment.Segment) error {
-	defer segmentSender.Close()
+func runAnalyticsUserCreate(mongo *mongodb.MongoDb, segmentSender *segment.HTTPClient) error {
+	//defer segmentSender.Close()
 	sendTelemetryEvents(&core.Account{}, segmentSender)
 	return nil
 	//ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
@@ -41,6 +44,46 @@ func runAnalyticsUserCreate(mongo *mongodb.MongoDb, segmentSender *segment.Segme
 	//return err
 }
 
-func sendTelemetryEvents(account *core.Account, segmentSender *segment.Segment) {
-	segmentSender.SendIdentifyEvent("test", map[string]interface{}{"hi": "hi"}, true, []string{})
+func sendTelemetryEvents(account *core.Account, segmentSender *segment.HTTPClient) {
+	//event := analytics.Identify{
+	//	//Type: "",
+	//	//MessageId:    "",
+	//	//AnonymousId:  "",
+	//	UserId:    "test7",
+	//	Timestamp: time.Now(),
+	//	//Context:      nil,
+	//	Traits:       map[string]interface{}{"hi": "hi", "dodo": nil},
+	//	Integrations: nil,
+	//}
+
+	batch := []*analytics.Identify{
+		&analytics.Identify{
+			Type: "identify",
+			//MessageId:    "",
+			//AnonymousId:  "",
+			UserId:    "test8",
+			Timestamp: time.Now(),
+			//Context:      nil,
+			Traits:       map[string]interface{}{"hi": "hi", "dodo": nil},
+			Integrations: nil,
+		},
+		&analytics.Identify{
+			Type: "identify",
+			//MessageId:    "",
+			//AnonymousId:  "",
+			UserId:    "test9",
+			Timestamp: time.Now(),
+			//Context:      nil,
+			Traits:       map[string]interface{}{"hi": "hi", "dodo": nil},
+			Integrations: nil,
+		},
+	}
+	//err := segmentSender.SendIdentifyEvent(&event)
+
+	err := segmentSender.SendBatchIdentifyEvent(batch)
+
+	//err := segmentSender.SendIdentifyEvent("test5", map[string]interface{}{"hi": "hi", "dodo": nil}, true, []string{})
+	if err != nil {
+		fmt.Printf("errorrrrrrr: %s\n", err.Error())
+	}
 }

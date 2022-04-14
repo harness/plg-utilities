@@ -17,7 +17,7 @@ func RunJobs(config *config.Config) {
 		logrus.Fatalf("unable to connect to mongo db: %s", err.Error())
 	}
 
-	segmentSender, _ := segment.New(config.Segment, nil)
+	segmentSender := segment.NewHTTPClient(config.Segment)
 
 	runAnalyticsUserCreate(mongo, segmentSender)
 }

@@ -14,7 +14,9 @@ type Logger interface {
 	Errorf(format string, args ...interface{})
 }
 
-// DefaultSegmentLogger Default logger implementation using logrus lib
+// DefaultSegmentLogger is an example Logger implementation using logrus
+// NOTE: use a logger that supports sync since logger (like logrus)
+// might be used in different goroutines or add sync logic in implementation
 type DefaultSegmentLogger struct {
 }
 
