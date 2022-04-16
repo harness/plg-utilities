@@ -47,6 +47,6 @@ func (a *AccountDAO) ListWithCursor(ctx context.Context) (*mongo.Cursor, error) 
 		logrus.WithError(err).Errorf("failed to retrieve documents from collection %s", accountsCollection)
 		return nil, err
 	}
-	logrus.Infof("sucessfully retrieved collection list with curosr %s", a.AccountCollection.Name())
+	logrus.Infof("sucessfully retrieved collection list with cursor %s", a.AccountCollection.Name())
 	return cursor, nil
 }

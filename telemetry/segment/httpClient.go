@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"gopkg.in/segmentio/analytics-go.v3"
-	"io/ioutil"
 	"net/http"
 	"plg-utilities/config"
 	"time"
@@ -17,24 +16,20 @@ import (
 // Use native go client segment.Client when you can,
 // especially for web servers.
 
-const (
-	identityEndpoint = "/v1/identify"
-	groupEndpoint    = "/v1/group"
-	trackEndpoint    = "/v1/track"
-	batchEndpoint    = "/v1/batch"
-
-	batchSize = 20
-)
-
+// todo: send account identify + group event to Segment - done
+// todo: send real user group event as part of Segment? also send real user identify event? this might overwrite existing user object's utm
+// todo: check if events being sent that are not shown in segment and show in amplitude
+// todo: add unit tests
+// todo: create github + webhook triggers
+// todo: create build pipeline
+//todo: override env variables in diff envs
+// todo: create deployment pipeline
 type HTTPClient struct {
 	enabled bool
 	url     string
 	apiKey  string
 	client  *http.Client
 }
-
-// send identitfy, group,and track event
-// send batch identitfy, group,and track event
 
 func NewHTTPClient(config config.SegmentConf) *HTTPClient {
 	return &HTTPClient{
@@ -44,6 +39,151 @@ func NewHTTPClient(config config.SegmentConf) *HTTPClient {
 		client:  &http.Client{},
 	}
 }
+
+func (s *HTTPClient) SendEvent(event analytics.Message) error {
+	if !s.enabled {
+		return fmt.Errorf("skipping sending segment event %+v", event)
+	}
+	if err := event.Validate(); err != nil {
+		return fmt.Errorf("could not validate event %s: %s", event, err.Error())
+	}
+
+	event, msgType, err := formatMessage(event)
+	if err != nil {
+		return err
+	}
+
+	// get the correct url for event type
+	url := s.url
+	switch msgType {
+	case GROUP:
+		url += GROUP_ENDPOINT
+	case IDENTIFY:
+		url += IDENTIFY_ENDPOINT
+	case TRACK:
+		url += TRACK_ENDPOINT
+	default:
+		return fmt.Errorf("incorrect event type %s for msg %+v", msgType, event)
+	}
+
+	b, err := json.Marshal(event)
+	if err != nil {
+		return fmt.Errorf("unable to marshal segment event %s: %s", event, err.Error())
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewReader(b))
+	if err != nil {
+		return fmt.Errorf("failed to create event request %s: %s", event, err.Error())
+	}
+
+	req.Header.Add("Content-Type", "application/json")
+	req.SetBasicAuth(s.apiKey, "")
+
+	_, err = s.client.Do(req)
+
+	if err != nil {
+		return fmt.Errorf("identify event request failed %s: %s", event, err.Error())
+	}
+	return err
+}
+
+type batch struct {
+	SentAt   time.Time           `json:"sentAt"`
+	Messages []analytics.Message `json:"batch"`
+}
+
+func (s *HTTPClient) SendBatchEvents(messages []analytics.Message) error {
+	if !s.enabled {
+		return fmt.Errorf("skipping sending segment batch events")
+	}
+	if len(messages) > BATCH_SIZE {
+		return fmt.Errorf("batch size is greater than limit of %d", BATCH_SIZE)
+	}
+
+	// modify messages to be in the correct format for Segment
+	for i, msg := range messages {
+		if err := msg.Validate(); err != nil {
+			return fmt.Errorf("could not validate batch event %+v: %s", msg, err.Error())
+		}
+		m, _, err := formatMessage(msg)
+		if err != nil {
+			return err
+		}
+		messages[i] = m
+	}
+
+	b, err := json.Marshal(batch{Messages: messages, SentAt: time.Now()})
+
+	if err != nil {
+		return fmt.Errorf("unable to marshal segment batch event: %s", err.Error())
+	}
+
+	url := s.url + BATCH_ENDPOINT
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewReader(b))
+	if err != nil {
+		return fmt.Errorf("failed to create batch event: %s", err.Error())
+	}
+
+	req.Header.Add("Content-Type", "application/json")
+	req.SetBasicAuth(s.apiKey, "")
+
+	_, err = s.client.Do(req)
+	if err != nil {
+		return fmt.Errorf("batch identify event request failed: %s", err.Error())
+	}
+	return err
+}
+
+// Returns the time value passed as first argument, unless it's the zero-value,
+// in that case the default value passed as second argument is returned.
+func makeTimestamp(t time.Time, def time.Time) time.Time {
+	if t == (time.Time{}) {
+		return def
+	}
+	return t
+}
+
+func formatMessage(msg analytics.Message) (analytics.Message, string, error) {
+	ts := time.Now()
+	switch m := msg.(type) {
+	case *analytics.Group:
+		m.Type = GROUP
+		m.Timestamp = makeTimestamp(m.Timestamp, ts)
+		return m, GROUP, nil
+	case *analytics.Identify:
+		m.Type = IDENTIFY
+		m.Timestamp = makeTimestamp(m.Timestamp, ts)
+		return m, IDENTIFY, nil
+	case *analytics.Track:
+		m.Type = TRACK
+		m.Timestamp = makeTimestamp(m.Timestamp, ts)
+		return m, TRACK, nil
+	case analytics.Group:
+		m.Type = GROUP
+		m.Timestamp = makeTimestamp(m.Timestamp, ts)
+		return m, GROUP, nil
+	case analytics.Identify:
+		m.Type = IDENTIFY
+		m.Timestamp = makeTimestamp(m.Timestamp, ts)
+		return m, IDENTIFY, nil
+	case analytics.Track:
+		m.Type = TRACK
+		m.Timestamp = makeTimestamp(m.Timestamp, ts)
+		return m, TRACK, nil
+	default:
+		return nil, "", fmt.Errorf("incorrect type %T message for %+v", m, msg)
+	}
+}
+
+// SendIdentifyEvent
+// todo: possibly add more send event methods but
+// currently this is unnecessary since SendEvent can be used to any event type
 func (s *HTTPClient) SendIdentifyEvent(identifyEvent *analytics.Identify) error {
 	if !s.enabled {
 		return fmt.Errorf("skipping sending segment identify event for %s", identifyEvent.UserId)
@@ -57,7 +197,7 @@ func (s *HTTPClient) SendIdentifyEvent(identifyEvent *analytics.Identify) error 
 		return fmt.Errorf("unable to marshal segment identify event for user %s: %s", identifyEvent.UserId, err.Error())
 	}
 
-	url := s.url + identityEndpoint
+	url := s.url + IDENTIFY_ENDPOINT
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
@@ -78,126 +218,4 @@ func (s *HTTPClient) SendIdentifyEvent(identifyEvent *analytics.Identify) error 
 
 	defer res.Body.Close()
 	return err
-}
-
-func (s *HTTPClient) SendBatchIdentifyEvent(identifyEvents []*analytics.Identify) error {
-	if !s.enabled {
-		return fmt.Errorf("skipping sending segment batch identify event")
-	}
-	if len(identifyEvents) > batchSize {
-		return fmt.Errorf("batch size is greater than %d", batchSize)
-	}
-
-	for _, identifyEvent := range identifyEvents {
-		if err := identifyEvent.Validate(); err != nil {
-			return fmt.Errorf("could not validate batch identify event for %s: %s", identifyEvent.UserId, err.Error())
-		}
-	}
-
-	b, err := json.Marshal(map[string]interface{}{"batch": identifyEvents})
-	if err != nil {
-		return fmt.Errorf("unable to marshal segment batch identify event: %s", err.Error())
-	}
-
-	url := s.url + batchEndpoint
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-
-	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewReader(b))
-	if err != nil {
-		return fmt.Errorf("failed to create batch identify event: %s", err.Error())
-	}
-
-	req.Header.Add("Content-Type", "application/json")
-	req.Header.Add("Content-Length", string(len(b)))
-	req.SetBasicAuth(s.apiKey, "")
-
-	res, err := s.client.Do(req)
-
-	if err != nil {
-		return fmt.Errorf("batch identify event request failed for user: %s", err.Error())
-	}
-
-	defer res.Body.Close()
-
-	bt, err := ioutil.ReadAll(res.Body)
-	fmt.Printf("doodle  %s\n", string(bt))
-	return err
-}
-
-//
-//func (s *HTTPClient) SendGroupEvent(accountId, identity string, traits map[string]interface{}, sendToAllDestinations bool,
-//	destinations []string) error {
-//	if !s.enabled {
-//		logrus.Infof("skipping sending segment group event event for group %s by identity %s", accountId, identity)
-//		return nil
-//	}
-//	analyticsTraits := buildAnalyticsTraits(traits)
-//	integrations := buildIntegrations(sendToAllDestinations, destinations)
-//	err := s.client.Enqueue(analytics.Group{UserId: identity, GroupId: accountId, Traits: analyticsTraits, Integrations: integrations})
-//	if err != nil {
-//		logrus.Errorf("unable to send segment group event for group %s: %s", accountId, err.Error())
-//	}
-//	return err
-//}
-//
-//func (s *HTTPClient) SendTrackEvent(eventName, identity string, properties map[string]interface{}, sendToAllDestinations bool,
-//	destinations []string) error {
-//	if !s.enabled {
-//		logrus.Infof("skipping sending segment track event %s by identity %s", eventName, identity)
-//		return nil
-//	}
-//	analyticsProperties := buildAnalyticsProperties(properties)
-//	integrations := buildIntegrations(sendToAllDestinations, destinations)
-//	err := s.client.Enqueue(analytics.Track{UserId: identity, Properties: analyticsProperties, Integrations: integrations})
-//	if err != nil {
-//		logrus.Errorf("unable to send segment track event %s: %s", eventName, err.Error())
-//	}
-//	return err
-//}
-//
-////func buildAnalyticsProperties(properties map[string]interface{}) analytics.Properties {
-////	analyticsProperties := analytics.NewProperties()
-////	for key, val := range properties {
-////		if val == nil {
-////			analyticsProperties.Set(key, "null")
-////		} else {
-////			analyticsProperties.Set(key, val)
-////		}
-////	}
-////	return analyticsProperties
-////}
-////
-////func buildIntegrations(sendToAllDestinations bool, destinations []string) analytics.Integrations {
-////	integrations := analytics.Integrations{}
-////	if sendToAllDestinations {
-////		return integrations.EnableAll()
-////	}
-////	//todo: test if this is needed due to java behavior that sends to all destination by default
-////	integrations.DisableAll()
-////	for _, destination := range destinations {
-////		integrations.Enable(destination)
-////	}
-////	return integrations
-////}
-////
-////func buildAnalyticsTraits(traits map[string]interface{}) analytics.Traits {
-////	analyticsTraits := analytics.NewTraits()
-////	for key, val := range traits {
-////		if val == nil {
-////			analyticsTraits.Set(key, "null")
-////		} else {
-////			analyticsTraits.Set(key, val)
-////		}
-////	}
-////	return analyticsTraits
-////}
-
-// Returns the time value passed as first argument, unless it's the zero-value,
-// in that case the default value passed as second argument is returned.
-func makeTimestamp(t time.Time, def time.Time) time.Time {
-	if t == (time.Time{}) {
-		return def
-	}
-	return t
 }

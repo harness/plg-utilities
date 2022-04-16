@@ -1,7 +1,7 @@
 CG_MONGODB_DB_NAME: "harness"
 CG_MONGODB_URL: "mongodb://localhost:27017/harness"
 
-#SEGMENT_ENABLED: false
-#SEGMENT_API_KEY: placeholder
-#SEGMENT_CERT_REQUIRED: false
-#SEGMENT_BLOCK_FOR_EVENTS: false
+SEGMENT_ENABLED: false
+SEGMENT_API_KEY: placeholder
+SEGMENT_CERT_REQUIRED: false
+SEGMENT_URL: "https://api.segment.io"

@@ -23,8 +23,6 @@ func main() {
 
 	// run jobs
 	jobs.RunJobs(&config)
-
-	//fmt.Scanln()
 }
 
 func initLog() {
@@ -58,6 +56,5 @@ func initConfig() (Config, error) {
 	}
 	err = viper.Unmarshal(&cfg)
 
-	fmt.Printf("%v", viper.Get("CG_MONGODB_DB_NAME"))
 	return cfg, err
 }
