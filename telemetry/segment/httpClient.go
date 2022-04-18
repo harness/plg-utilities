@@ -14,15 +14,14 @@ import (
 // The segment.HTTPClient is useful for workloads that require
 // telemetry events to be sent synchronously such as CRON jobs.
 // Use native go client segment.Client when you can,
-// especially for web servers.
+// especially for web servers that require auto-batching.
 
 // todo: send account identify + group event to Segment - done
-// todo: send real user group event as part of Segment? also send real user identify event? this might overwrite existing user object's utm
 // todo: check if events being sent that are not shown in segment and show in amplitude
 // todo: add unit tests
-// todo: create github + webhook triggers
-// todo: create build pipeline
-//todo: override env variables in diff envs
+// todo: create github + webhook triggers - done
+// todo: create build pipeline - in progress
+// todo: override env variables in diff envs
 // todo: create deployment pipeline
 type HTTPClient struct {
 	enabled bool
@@ -140,15 +139,6 @@ func (s *HTTPClient) SendBatchEvents(messages []analytics.Message) error {
 	return err
 }
 
-// Returns the time value passed as first argument, unless it's the zero-value,
-// in that case the default value passed as second argument is returned.
-func makeTimestamp(t time.Time, def time.Time) time.Time {
-	if t == (time.Time{}) {
-		return def
-	}
-	return t
-}
-
 func formatMessage(msg analytics.Message) (analytics.Message, string, error) {
 	ts := time.Now()
 	switch m := msg.(type) {
@@ -181,7 +171,16 @@ func formatMessage(msg analytics.Message) (analytics.Message, string, error) {
 	}
 }
 
-// SendIdentifyEvent
+// Returns the time value passed as first argument, unless it's the zero-value,
+// in that case the default value passed as second argument is returned.
+func makeTimestamp(t time.Time, def time.Time) time.Time {
+	if t == (time.Time{}) {
+		return def
+	}
+	return t
+}
+
+// SendIdentifyEvent - redundant
 // todo: possibly add more send event methods but
 // currently this is unnecessary since SendEvent can be used to any event type
 func (s *HTTPClient) SendIdentifyEvent(identifyEvent *analytics.Identify) error {
