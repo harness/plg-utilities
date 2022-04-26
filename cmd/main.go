@@ -48,6 +48,8 @@ func initConfig() (Config, error) {
 	viper.AddConfigPath(".")
 	// add another path for docker
 	viper.AddConfigPath("/")
+
+	// get config file
 	viper.SetConfigName("config")
 	viper.SetConfigType("yaml")
 	viper.AutomaticEnv()
