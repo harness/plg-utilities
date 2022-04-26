@@ -138,11 +138,9 @@ func createUserIdentityEvent(user core.User, batchEvents *[]analytics.Message, q
 		UserId:    user.Email,
 		Timestamp: time.Now(),
 		Traits: map[string]interface{}{
-			"email": user.Email,
-			"name":  user.Name,
-			"id":    user.Id,
-			// not including accountId + accountName since they have multiple accounts
-			//"accountId": user
+			"email":        user.Email,
+			"name":         user.Name,
+			"id":           user.Id,
 			"source":       "migration",
 			"utm_source":   user.UtmInfo.UtmSource,
 			"utm_content":  user.UtmInfo.UtmSource,
