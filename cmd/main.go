@@ -42,9 +42,12 @@ func initLog() {
 	))
 }
 
+// get config from env vars
 func initConfig() (Config, error) {
-	// get config from env vars
+	// add local path
 	viper.AddConfigPath(".")
+	// add another path for docker
+	viper.AddConfigPath("/")
 	viper.SetConfigName("config")
 	viper.SetConfigType("yaml")
 	viper.AutomaticEnv()
