@@ -61,10 +61,6 @@ func runAnalyticsUserCreate(mongo *mongodb.MongoDb, segmentSender *segment.HTTPC
 		logrus.Errorf("unable to list entire collection %s: %s", collectionName, err.Error())
 	}
 
-	// todo: users needed?
-	// todo: send real user group event as part of Segment?
-	// todo: also send real user identify event? this might overwrite existing user object's utm
-	// possible chance that accountName could be null
 	//process every user
 	collectionName = mongo.UserDAO.UserCollections.Name()
 	userCursor, err := mongo.UserDAO.ListWithCursor(ctx)
@@ -138,9 +134,11 @@ func createUserIdentityEvent(user core.User, batchEvents *[]analytics.Message, q
 		UserId:    user.Email,
 		Timestamp: time.Now(),
 		Traits: map[string]interface{}{
-			"email":        user.Email,
-			"name":         user.Name,
-			"id":           user.Id,
+			"email": user.Email,
+			"name":  user.Name,
+			"id":    user.Id,
+			// not including accountId + accountName since they have multiple accounts
+			//"accountId": user
 			"source":       "migration",
 			"utm_source":   user.UtmInfo.UtmSource,
 			"utm_content":  user.UtmInfo.UtmSource,
@@ -178,91 +176,3 @@ func flush(batchEvents *[]analytics.Message, queue chan []analytics.Message) {
 	queue <- *batchEvents
 	*batchEvents = []analytics.Message{}
 }
-
-//func sendTelemetryEvents(account *core.Account, segmentSender *segment.HTTPClient) {
-//	event := &analytics.Identify{
-//		//Type: "",
-//		//MessageId:    "",
-//		//AnonymousId:  "",
-//		UserId:    "test7",
-//		Timestamp: time.Now(),
-//		//Context:      nil,
-//		Traits:       map[string]interface{}{"hi": "hi", "dodo": nil},
-//		Integrations: nil,
-//	}
-//
-//	//batch := []*analytics.Identify{
-//	//	&analytics.Identify{
-//	//		Type: "identify",
-//	//		//MessageId:    "",
-//	//		//AnonymousId:  "",
-//	//		UserId:    "test8",
-//	//		Timestamp: time.Now(),
-//	//		//Context:      nil,
-//	//		Traits:       map[string]interface{}{"hi": "hi", "dodo": nil},
-//	//		Integrations: nil,
-//	//	},
-//	//	&analytics.Identify{
-//	//		Type: "identify",
-//	//		//MessageId:    "",
-//	//		//AnonymousId:  "",
-//	//		UserId:    "test9",
-//	//		Timestamp: time.Now(),
-//	//		//Context:      nil,
-//	//		Traits:       map[string]interface{}{"hi": "hi", "dodo": nil},
-//	//		Integrations: nil,
-//	//	},
-//	//}
-//	//err := segmentSender.SendIdentifyEvent(&event)
-//
-//	batch := []analytics.Message{
-//		analytics.Identify{
-//			//Type: "identify",
-//			//MessageId:    "",
-//			//AnonymousId:  "",
-//			UserId:    "test40",
-//			Timestamp: time.Now(),
-//			//Context:      nil,
-//			Traits:       map[string]interface{}{"hi": "hi", "dodo": nil},
-//			Integrations: nil,
-//		},
-//		analytics.Identify{
-//			//Type: "identify",
-//			//MessageId:    "",
-//			//AnonymousId:  "",
-//			UserId:    "test41",
-//			Timestamp: time.Now(),
-//			//Context:      nil,
-//			Traits:       map[string]interface{}{"hi": "hi", "dodo": nil},
-//			Integrations: nil,
-//		},
-//		&analytics.Identify{
-//			//Type: "identify",
-//			//MessageId:    "",
-//			//AnonymousId:  "",
-//			UserId:    "test42",
-//			Timestamp: time.Now(),
-//			//Context:      nil,
-//			Traits:       map[string]interface{}{"hi": "hi", "dodo": nil},
-//			Integrations: nil,
-//		},
-//		&analytics.Identify{
-//			//Type: "identify",
-//			//MessageId:    "",
-//			//AnonymousId:  "",
-//			UserId:    "test43",
-//			Timestamp: time.Now(),
-//			//Context:      nil,
-//			Traits:       map[string]interface{}{"hi": "hi", "dodo": nil},
-//			Integrations: nil,
-//		},
-//	}
-//
-//	err := segmentSender.SendBatchEvents(batch)
-//	segmentSender.SendEvent(event)
-//
-//	//err := segmentSender.SendIdentifyEvent("test5", map[string]interface{}{"hi": "hi", "dodo": nil}, true, []string{})
-//	if err != nil {
-//		fmt.Printf("errorrrrrrr: %s\n", err.Error())
-//	}
-//}

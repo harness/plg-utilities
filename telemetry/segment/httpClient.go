@@ -16,13 +16,7 @@ import (
 // Use native go client segment.Client when you can,
 // especially for web servers that require auto-batching.
 
-// todo: send account identify + group event to Segment - done
-// todo: check if events being sent that are not shown in segment and show in amplitude
 // todo: add unit tests
-// todo: create github + webhook triggers - done
-// todo: create build pipeline - in progress
-// todo: override env variables in diff envs
-// todo: create deployment pipeline
 type HTTPClient struct {
 	enabled bool
 	url     string
