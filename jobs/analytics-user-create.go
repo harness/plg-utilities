@@ -26,9 +26,9 @@ func runAnalyticsUserCreate(mongo *mongodb.MongoDb, segmentSender *segment.HTTPC
 				logrus.Infof("processing batch of events %+v", batchEvent)
 				err := segmentSender.SendBatchEvents(batchEvent)
 				if err != nil {
-					logrus.Errorf("failed to process batch of events %+v", batchEvent)
+					logrus.Errorf("failed to process batch of events %+v: %s", batchEvent, err.Error())
 				} else {
-					logrus.Errorf("successful processing batch of events %+v", batchEvent)
+					logrus.Infof("successful processing batch of events %+v", batchEvent)
 				}
 			}
 		}(segmentSender, &wg)
@@ -118,18 +118,6 @@ func createAccountGroupEvent(account core.Account, batchEvents *[]analytics.Mess
 	flushIfLimit(batchEvents, queue)
 }
 func createUserIdentityEvent(user core.User, batchEvents *[]analytics.Message, queue chan []analytics.Message) {
-	//properties.put("email", email);
-	//properties.put("name", userInfo.getName());
-	//properties.put("id", userInfo.getUuid());
-	//properties.put("startTime", String.valueOf(Instant.now().toEpochMilli()));
-	//properties.put("accountId", accountId);
-	//properties.put("accountName", accountName);
-	//properties.put("source", source);
-	//properties.put("utm_source", utmInfo.getUtmSource() == null ? "" : utmInfo.getUtmSource());
-	//properties.put("utm_content", utmInfo.getUtmContent() == null ? "" : utmInfo.getUtmContent());
-	//properties.put("utm_medium", utmInfo.getUtmMedium() == null ? "" : utmInfo.getUtmMedium());
-	//properties.put("utm_term", utmInfo.getUtmTerm() == null ? "" : utmInfo.getUtmTerm());
-	//properties.put("utm_campaign", utmInfo.getUtmCampaign() == null ? "" : utmInfo.getUtmCampaign());
 	event := analytics.Identify{
 		UserId:    user.Email,
 		Timestamp: time.Now(),
@@ -137,8 +125,6 @@ func createUserIdentityEvent(user core.User, batchEvents *[]analytics.Message, q
 			"email": user.Email,
 			"name":  user.Name,
 			"id":    user.Id,
-			// not including accountId + accountName since they have multiple accounts
-			//"accountId": user
 			"source":       "migration",
 			"utm_source":   user.UtmInfo.UtmSource,
 			"utm_content":  user.UtmInfo.UtmSource,
