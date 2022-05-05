@@ -122,9 +122,9 @@ func createUserIdentityEvent(user core.User, batchEvents *[]analytics.Message, q
 		UserId:    user.Email,
 		Timestamp: time.Now(),
 		Traits: map[string]interface{}{
-			"email": user.Email,
-			"name":  user.Name,
-			"id":    user.Id,
+			"email":        user.Email,
+			"name":         user.Name,
+			"id":           user.Id,
 			"source":       "migration",
 			"utm_source":   user.UtmInfo.UtmSource,
 			"utm_content":  user.UtmInfo.UtmSource,
@@ -153,7 +153,7 @@ func createUserGroupEvent(user core.User, accountId string, accountName string,
 }
 
 func flushIfLimit(batchEvents *[]analytics.Message, queue chan []analytics.Message) {
-	if len(*batchEvents) > segment.BATCH_SIZE {
+	if len(*batchEvents) == segment.BATCH_SIZE {
 		flush(batchEvents, queue)
 	}
 }
