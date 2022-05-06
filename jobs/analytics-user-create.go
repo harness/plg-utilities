@@ -143,7 +143,7 @@ func createAccountIdentityEvent(account MinimalAccount, batchEvents *[]analytics
 		UserId:       segment.ACCOUNT_ANALYSIS_USER_PREFIX + account.Id,
 		Timestamp:    time.Now(),
 		Traits:       map[string]interface{}{"accountId": account.Id, "accountName": account.AccountName},
-		Integrations: analytics.Integrations{}.DisableAll().Enable(segment.AMPLITUDE),
+		Integrations: analytics.Integrations{}.EnableAll(),
 	}
 	*batchEvents = append(*batchEvents, event)
 	flushIfLimit(batchEvents, queue)
@@ -155,7 +155,7 @@ func createAccountGroupEvent(account MinimalAccount, batchEvents *[]analytics.Me
 		GroupId:      account.Id,
 		Timestamp:    time.Now(),
 		Traits:       map[string]interface{}{"group_id": account.Id, "group_type": "Account", "group_name": account.AccountName},
-		Integrations: analytics.Integrations{}.DisableAll().Enable(segment.AMPLITUDE),
+		Integrations: analytics.Integrations{}.EnableAll(),
 	}
 	*batchEvents = append(*batchEvents, event)
 	flushIfLimit(batchEvents, queue)
@@ -175,7 +175,7 @@ func createUserIdentityEvent(user core.User, batchEvents *[]analytics.Message, q
 			"utm_term":     user.UtmInfo.UtmTerm,
 			"utm_campaign": user.UtmInfo.UtmCampaign,
 		},
-		Integrations: analytics.Integrations{}.DisableAll().Enable(segment.AMPLITUDE),
+		Integrations: analytics.Integrations{}.EnableAll(),),
 	}
 	*batchEvents = append(*batchEvents, event)
 	flushIfLimit(batchEvents, queue)
@@ -188,7 +188,7 @@ func createUserGroupEvent(user core.User, accountId string, accountName string,
 		GroupId:      accountId,
 		Timestamp:    time.Now(),
 		Traits:       map[string]interface{}{"group_id": accountId, "group_type": "Account", "group_name": accountName},
-		Integrations: analytics.Integrations{}.DisableAll().Enable(segment.AMPLITUDE),
+		Integrations: analytics.Integrations{}.EnableAll(),
 	}
 	*batchEvents = append(*batchEvents, event)
 	flushIfLimit(batchEvents, queue)
