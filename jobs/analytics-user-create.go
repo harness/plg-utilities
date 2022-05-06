@@ -175,7 +175,7 @@ func createUserIdentityEvent(user core.User, batchEvents *[]analytics.Message, q
 			"utm_term":     user.UtmInfo.UtmTerm,
 			"utm_campaign": user.UtmInfo.UtmCampaign,
 		},
-		Integrations: analytics.Integrations{}.EnableAll(),),
+		Integrations: analytics.Integrations{}.EnableAll(),
 	}
 	*batchEvents = append(*batchEvents, event)
 	flushIfLimit(batchEvents, queue)
