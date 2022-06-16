@@ -11,10 +11,11 @@ import (
 )
 
 type MongoDb struct {
-	client     *mongo.Client
-	database   *mongo.Database
-	AccountDAO *harness.AccountDAO
-	UserDAO    *harness.UserDAO
+	client           *mongo.Client
+	database         *mongo.Database
+	AccountDAO       *harness.AccountDAO
+	UserDAO          *harness.UserDAO
+	ModuleLicenseDAO *harness.ModuleLicenseDAO
 }
 
 func New(conf config.MongoDbConf) (*MongoDb, error) {
@@ -44,10 +45,16 @@ func New(conf config.MongoDbConf) (*MongoDb, error) {
 		return nil, err
 	}
 
+	moduleLicenseDAO, err := harness.NewModuleLicenseDAO(database)
+	if err != nil {
+		return nil, err
+	}
+
 	return &MongoDb{
-		client:     client,
-		database:   database,
-		AccountDAO: accountDAO,
-		UserDAO:    userDAO,
+		client:           client,
+		database:         database,
+		AccountDAO:       accountDAO,
+		UserDAO:          userDAO,
+		ModuleLicenseDAO: moduleLicenseDAO,
 	}, nil
 }
