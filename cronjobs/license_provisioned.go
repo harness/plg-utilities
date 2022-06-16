@@ -19,7 +19,7 @@ const (
 	FF_LICENSE_MAU_PROVISIONED               = "ff_license_mau_provisioned"
 	CCM_LICENSE_CLOUD_SPEND_PROVISIONED      = "ccm_license_cloud_spend_provisioned"
 
-	CD                 = "CE"
+	CD                 = "CD"
 	SERVICES           = "SERVICES"
 	SERVICES_INSTANCES = "SERVICE_INSTANCES"
 
@@ -117,7 +117,7 @@ func getTraits(moduleLicense core.ModuleLicense, accountId string) map[string]in
 
 		switch moduleLicense.CDLicenseType {
 		case SERVICES:
-			traits[CD_LICENSE_SERVICES_PROVISIONED] = moduleLicense.ServiceInstances
+			traits[CD_LICENSE_SERVICES_PROVISIONED] = moduleLicense.Workloads
 		case SERVICES_INSTANCES:
 			traits[CD_LICENSE_SERVICE_INSTANCES_PROVISIONED] = moduleLicense.ServiceInstances
 		}

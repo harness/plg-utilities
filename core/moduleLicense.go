@@ -17,6 +17,7 @@ type (
 		//CD
 		CDLicenseType    string `json:"cdLicenseType,omitempty" bson:"cdLicenseType,omitempty"`
 		ServiceInstances string `json:"serviceInstances,omitempty" bson:"serviceInstances,omitempty"`
+		Workloads        int    `json:"workloads,omitempty" bson:"workloads,omitempty"`
 
 		//CI
 		NumberOfCommitters int `json:"numberOfCommitters,omitempty" bson:"numberOfCommitters,omitempty"`
