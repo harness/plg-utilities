@@ -5,6 +5,7 @@ type (
 	Config struct {
 		MongoDb MongoDbConf `mapstructure:",squash"`
 		Segment SegmentConf `mapstructure:",squash"`
+		Mode    string      `mapstructure:"MODE" default:"LICENSE_PROVISIONED_CRON"`
 	}
 
 	MongoDbConf struct {

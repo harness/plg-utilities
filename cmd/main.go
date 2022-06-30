@@ -1,13 +1,15 @@
 package main
 
 import (
-	"fmt"
 	stackdriver "github.com/TV4/logrus-stackdriver-formatter"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"os"
 	. "plg-utilities/config"
+	"plg-utilities/cronjobs"
+	"plg-utilities/db/mongodb"
 	"plg-utilities/jobs"
+	"plg-utilities/telemetry/segment"
 )
 
 func main() {
@@ -19,10 +21,20 @@ func main() {
 	if err != nil {
 		logrus.Fatalf("could not load configuartion, error: %s", err.Error())
 	}
-	fmt.Printf("%v\n", config)
 
 	// run jobs
-	jobs.RunJobs(&config)
+	if config.Mode == "ANALYTICS_USER_JOB" {
+		jobs.RunJobs(&config)
+	}
+
+	if config.Mode == "LICENSE_PROVISIONED_CRON" {
+		mongo, err := mongodb.New(config.MongoDb)
+		if err != nil {
+			logrus.Fatalf("unable to connect to mongo db: %s", err.Error())
+		}
+		segmentSender := segment.NewHTTPClient(config.Segment)
+		cronjobs.RunLicenseProvisionedJob(mongo, segmentSender)
+	}
 }
 
 func initLog() {
