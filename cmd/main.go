@@ -28,7 +28,7 @@ func main() {
 	}
 
 	if config.Mode == "LICENSE_PROVISIONED_CRON" {
-		mongo, err := mongodb.New(config.MongoDb)
+		mongo, err := mongodb.New(config.CGMongoDb, config.NGMongoDb)
 		if err != nil {
 			logrus.Fatalf("unable to connect to mongo db: %s", err.Error())
 		}
