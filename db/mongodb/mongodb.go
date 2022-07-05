@@ -11,48 +11,66 @@ import (
 )
 
 type MongoDb struct {
-	client           *mongo.Client
-	database         *mongo.Database
+	cgClient         *mongo.Client
+	cgDatabase       *mongo.Database
+	ngClient         *mongo.Client
+	ngDatabase       *mongo.Database
 	AccountDAO       *harness.AccountDAO
 	UserDAO          *harness.UserDAO
 	ModuleLicenseDAO *harness.ModuleLicenseDAO
 }
 
-func New(conf config.MongoDbConf) (*MongoDb, error) {
+func New(cgConf config.CGMongoDbConf, ngConf config.NGMongoDbConf) (*MongoDb, error) {
 	logrus.Info("trying to connect to mongo")
 
-	client, err := mongo.Connect(context.Background(), options.Client().ApplyURI(conf.ConnStr))
+	// Set up CG
+	cgClient, err := mongo.Connect(context.Background(), options.Client().ApplyURI(cgConf.ConnStr))
 	if err != nil {
 		panic(err)
 	}
 
 	// Ping mongo server to see if it's accessible. It's necessary to start GitOpsService
-	err = client.Ping(context.Background(), readpref.Primary())
+	err = cgClient.Ping(context.Background(), readpref.Primary())
 	if err != nil {
 		return nil, err
 	}
 
-	logrus.Info("successfully pinged mongo server")
-	database := client.Database(conf.DbName)
+	logrus.Info("successfully pinged cg mongo server")
+	cgDatabase := cgClient.Database(cgConf.DbName)
 
-	accountDAO, err := harness.NewAccountDAO(database)
+	accountDAO, err := harness.NewAccountDAO(cgDatabase)
 	if err != nil {
 		return nil, err
 	}
 
-	userDAO, err := harness.NewUserDAO(database)
+	userDAO, err := harness.NewUserDAO(cgDatabase)
 	if err != nil {
 		return nil, err
 	}
 
-	moduleLicenseDAO, err := harness.NewModuleLicenseDAO(database)
+	// Set up NG
+	ngClient, err := mongo.Connect(context.Background(), options.Client().ApplyURI(ngConf.ConnStr))
+	if err != nil {
+		panic(err)
+	}
+
+	// Ping mongo server to see if it's accessible. It's necessary to start GitOpsService
+	err = ngClient.Ping(context.Background(), readpref.Primary())
+	if err != nil {
+		return nil, err
+	}
+
+	logrus.Info("successfully pinged ng mongo server")
+	ngDatabase := cgClient.Database(ngConf.DbName)
+
+	moduleLicenseDAO, err := harness.NewModuleLicenseDAO(ngDatabase)
 	if err != nil {
 		return nil, err
 	}
 
 	return &MongoDb{
-		client:           client,
-		database:         database,
+		cgClient:         cgClient,
+		cgDatabase:       cgDatabase,
 		AccountDAO:       accountDAO,
 		UserDAO:          userDAO,
 		ModuleLicenseDAO: moduleLicenseDAO,

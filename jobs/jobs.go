@@ -9,7 +9,7 @@ import (
 
 // todo: convert this to migrations microservice
 func RunJobs(config *config.Config) {
-	mongo, err := mongodb.New(config.MongoDb)
+	mongo, err := mongodb.New(config.CGMongoDb, config.NGMongoDb)
 	if err != nil {
 		logrus.Fatalf("unable to connect to mongo db: %s", err.Error())
 	}

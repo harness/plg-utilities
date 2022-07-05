@@ -4,3 +4,5 @@ coverage.out
 dist/
 vendor/
 .DS_Store
+/dbt/dwh.json
+/dbt
