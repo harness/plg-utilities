@@ -25,7 +25,7 @@ func NewModuleLicenseDAO(mongoDb *mongo.Database) (*ModuleLicenseDAO, error) {
 func (a *ModuleLicenseDAO) ListWithCursor(ctx context.Context) (*mongo.Cursor, error) {
 	cursor, err := a.ModuleLicenseCollection.Find(ctx, bson.D{})
 	if err != nil {
-		logrus.WithError(err).Errorf("failed to retrieve documents from collection %s", accountsCollection)
+		logrus.WithError(err).Errorf("failed to retrieve documents from collection %s", moduleLicenseCollection)
 		return nil, err
 	}
 	logrus.Infof("sucessfully retrieved collection list with cursor %s", a.ModuleLicenseCollection.Name())
