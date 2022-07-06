@@ -3,6 +3,7 @@ package cronjobs
 import (
 	"context"
 	"github.com/sirupsen/logrus"
+	"go.mongodb.org/mongo-driver/bson"
 	"gopkg.in/segmentio/analytics-go.v3"
 	"plg-utilities/core"
 	"plg-utilities/db/mongodb"
@@ -52,6 +53,22 @@ func RunLicenseProvisionedJob(mongo *mongodb.MongoDb, segmentSender *segment.HTT
 			}
 		}(segmentSender, &wg)
 	}
+
+	/// TEST
+	mCol := mongo.ModuleLicenseDAO.ModuleLicenseCollection.Name()
+	mCursor, err := mongo.ModuleLicenseDAO.ModuleLicenseCollection.Find(ctx, bson.D{})
+	if err != nil {
+		logrus.Errorf("unable to find collection %s: %s", mCol, err.Error())
+	}
+
+	var modules []core.ModuleLicense
+	if err := mCursor.All(ctx, &modules); err != nil {
+		logrus.Errorf("unable to list collection %s: %s", mCol, err.Error())
+	}
+	logrus.Infof("DOOOOOODD \n %+v", modules)
+	mCursor.Close(ctx)
+
+	/// TEST
 
 	// process every account
 	collectionName := mongo.ModuleLicenseDAO.ModuleLicenseCollection.Name()
