@@ -42,15 +42,15 @@ func RunLicenseProvisionedJob(mongo *mongodb.MongoDb, segmentSender *segment.HTT
 		wg.Add(1)
 		go func(segmentSender *segment.HTTPClient, wg *sync.WaitGroup) {
 			defer wg.Done()
-			for batchEvent := range batchEventsQueue {
-				logrus.Infof("processing batch of events %+v", batchEvent)
-				err := segmentSender.SendBatchEvents(batchEvent)
-				if err != nil {
-					logrus.Errorf("failed to process batch of events %+v: %s", batchEvent, err.Error())
-				} else {
-					logrus.Infof("successful processing batch of events %+v", batchEvent)
-				}
-			}
+			//for batchEvent := range batchEventsQueue {
+			//	//logrus.Infof("processing batch of events %+v", batchEvent)
+			//	//err := segmentSender.SendBatchEvents(batchEvent)
+			//	//if err != nil {
+			//	//	logrus.Errorf("failed to process batch of events %+v: %s", batchEvent, err.Error())
+			//	//} else {
+			//	//	logrus.Infof("successful processing batch of events %+v", batchEvent)
+			//	//}
+			//}
 		}(segmentSender, &wg)
 	}
 
@@ -68,20 +68,20 @@ func RunLicenseProvisionedJob(mongo *mongodb.MongoDb, segmentSender *segment.HTT
 	//logrus.Infof("DOOOOOODD \n %+v", modules)
 	//mCursor.Close(ctx)
 
-	mCol := mongo.AccountDAO.AccountCollection.Name()
-	mCursor, err := mongo.AccountDAO.AccountCollection.Find(ctx, bson.D{})
+	mCol := mongo.EnvironmentGroupNGDAO.EnvironmentGroupNGCollection.Name()
+	mCursor, err := mongo.EnvironmentGroupNGDAO.EnvironmentGroupNGCollection.Find(ctx, bson.D{})
 	if err != nil {
 		logrus.Errorf("unable to find collection %s: %s", mCol, err.Error())
 	}
 
-	var modules []core.Account
+	var modules []core.EnvironmentGroupNG
 	if err := mCursor.All(ctx, &modules); err != nil {
 		logrus.Errorf("unable to list collection %s: %s", mCol, err.Error())
 	}
 	logrus.Infof("DOOOOOODD \n %+v", modules)
 	mCursor.Close(ctx)
 
-	/// TEST
+	/// TEST END
 
 	// process every account
 	collectionName := mongo.ModuleLicenseDAO.ModuleLicenseCollection.Name()
@@ -96,7 +96,7 @@ func RunLicenseProvisionedJob(mongo *mongodb.MongoDb, segmentSender *segment.HTT
 		if err != nil {
 			logrus.Errorf("unable to decode record for collection %s: %+v: %s", collectionName, moduleLicense, err.Error())
 		}
-		logrus.Infof("found in collection %s: %+v", collectionName, moduleLicense)
+		//logrus.Infof("found in collection %s: %+v", collectionName, moduleLicense)
 		createLicenseGroupEvent(moduleLicense, &batchEvents, batchEventsQueue)
 	}
 

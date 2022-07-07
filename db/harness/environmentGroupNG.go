@@ -8,16 +8,16 @@ import (
 )
 
 const (
-	accountsCollection = "accounts"
+	environmentGroupNGCollection = "environmentGroupNG"
 )
 
-type AccountDAO struct {
-	AccountCollection *mongo.Collection
+type EnvironmentGroupNGDAO struct {
+	EnvironmentGroupNGCollection *mongo.Collection
 }
 
-func NewAccountDAO(mongoDb *mongo.Database) (*AccountDAO, error) {
-	dao := &AccountDAO{
-		AccountCollection: mongoDb.Collection(accountsCollection),
+func NewEnvironmentGroupNGDAO(mongoDb *mongo.Database) (*EnvironmentGroupNGDAO, error) {
+	dao := &EnvironmentGroupNGDAO{
+		EnvironmentGroupNGCollection: mongoDb.Collection(environmentGroupNGCollection),
 	}
 	return dao, nil
 }
@@ -41,12 +41,12 @@ func NewAccountDAO(mongoDb *mongo.Database) (*AccountDAO, error) {
 //	return nil, nil
 //}
 
-func (a *AccountDAO) ListWithCursor(ctx context.Context) (*mongo.Cursor, error) {
-	cursor, err := a.AccountCollection.Find(ctx, bson.D{})
+func (a *EnvironmentGroupNGDAO) ListWithCursor(ctx context.Context) (*mongo.Cursor, error) {
+	cursor, err := a.EnvironmentGroupNGCollection.Find(ctx, bson.D{})
 	if err != nil {
-		logrus.WithError(err).Errorf("failed to retrieve documents from collection %s", accountsCollection)
+		logrus.WithError(err).Errorf("failed to retrieve documents from collection %s", environmentGroupNGCollection)
 		return nil, err
 	}
-	logrus.Infof("sucessfully retrieved collection list with cursor %s", a.AccountCollection.Name())
+	logrus.Infof("sucessfully retrieved collection list with cursor %s", a.EnvironmentGroupNGCollection.Name())
 	return cursor, nil
 }

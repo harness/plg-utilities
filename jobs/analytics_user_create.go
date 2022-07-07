@@ -82,7 +82,7 @@ func runAnalyticsUserCreate(mongo *mongodb.MongoDb, segmentSender *segment.HTTPC
 	//accountIdToName := map[string]string{}
 	//
 	//// process every account
-	//collectionName := mongo.AccountDAO.AccountCollection.Name()
+	//collectionName := mongo.AccountDAO.EnvironmentGroupNGDAO.Name()
 	//accountCursor, err := mongo.AccountDAO.ListWithCursor(ctx)
 	//if err != nil {
 	//	logrus.Fatalf("unable to list collection %s: %s", collectionName, err.Error())
