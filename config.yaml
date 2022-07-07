@@ -1,8 +1,8 @@
 MODE: "LICENSE_PROVISIONED_CRON"
 CG_MONGODB_DB_NAME: "harness"
 CG_MONGODB_URL: "mongodb://localhost:27017/harness"
-NG_MONGODB_DB_NAME: "harness"
-NG_MONGODB_URL: "mongodb://localhost:27017/harness"
+NG_MONGODB_DB_NAME: "ng-harness"
+NG_MONGODB_URL: "mongodb://localhost:27017/ng-harness"
 
 SEGMENT_ENABLED: false
 SEGMENT_API_KEY: placeholder

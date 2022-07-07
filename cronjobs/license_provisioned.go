@@ -55,13 +55,26 @@ func RunLicenseProvisionedJob(mongo *mongodb.MongoDb, segmentSender *segment.HTT
 	}
 
 	/// TEST
-	mCol := mongo.ModuleLicenseDAO.ModuleLicenseCollection.Name()
-	mCursor, err := mongo.ModuleLicenseDAO.ModuleLicenseCollection.Find(ctx, bson.D{})
+	//mCol := mongo.ModuleLicenseDAO.ModuleLicenseCollection.Name()
+	//mCursor, err := mongo.ModuleLicenseDAO.ModuleLicenseCollection.Find(ctx, bson.D{})
+	//if err != nil {
+	//	logrus.Errorf("unable to find collection %s: %s", mCol, err.Error())
+	//}
+	//
+	//var modules []core.ModuleLicense
+	//if err := mCursor.All(ctx, &modules); err != nil {
+	//	logrus.Errorf("unable to list collection %s: %s", mCol, err.Error())
+	//}
+	//logrus.Infof("DOOOOOODD \n %+v", modules)
+	//mCursor.Close(ctx)
+
+	mCol := mongo.AccountDAO.AccountCollection.Name()
+	mCursor, err := mongo.AccountDAO.AccountCollection.Find(ctx, bson.D{})
 	if err != nil {
 		logrus.Errorf("unable to find collection %s: %s", mCol, err.Error())
 	}
 
-	var modules []core.ModuleLicense
+	var modules []core.Account
 	if err := mCursor.All(ctx, &modules); err != nil {
 		logrus.Errorf("unable to list collection %s: %s", mCol, err.Error())
 	}
