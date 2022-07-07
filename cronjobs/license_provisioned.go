@@ -3,7 +3,6 @@ package cronjobs
 import (
 	"context"
 	"github.com/sirupsen/logrus"
-	"go.mongodb.org/mongo-driver/bson"
 	"gopkg.in/segmentio/analytics-go.v3"
 	"plg-utilities/core"
 	"plg-utilities/db/mongodb"
@@ -68,17 +67,20 @@ func RunLicenseProvisionedJob(mongo *mongodb.MongoDb, segmentSender *segment.HTT
 	//logrus.Infof("DOOOOOODD \n %+v", modules)
 	//mCursor.Close(ctx)
 
-	mCol := mongo.EnvironmentGroupNGDAO.EnvironmentGroupNGCollection.Name()
-	mCursor, err := mongo.EnvironmentGroupNGDAO.EnvironmentGroupNGCollection.Find(ctx, bson.D{})
+	mCol := mongo.AccountDAO.AccountCollection.Name()
+	mCursor, err := mongo.AccountDAO.ListWithCursor(ctx)
 	if err != nil {
 		logrus.Errorf("unable to find collection %s: %s", mCol, err.Error())
 	}
 
-	var modules []core.EnvironmentGroupNG
-	if err := mCursor.All(ctx, &modules); err != nil {
-		logrus.Errorf("unable to list collection %s: %s", mCol, err.Error())
+	for mCursor.Next(ctx) {
+		var moduleLicense core.Account
+		err := mCursor.Decode(&moduleLicense)
+		if err != nil {
+			logrus.Errorf("unable to decode record for collection %s: %+v: %s", mCol, moduleLicense, err.Error())
+		}
+		logrus.Infof("found in collection %s: %+v", mCol, moduleLicense)
 	}
-	logrus.Infof("DOOOOOODD \n %+v", modules)
 	mCursor.Close(ctx)
 
 	/// TEST END
