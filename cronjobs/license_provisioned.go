@@ -41,49 +41,17 @@ func RunLicenseProvisionedJob(mongo *mongodb.MongoDb, segmentSender *segment.HTT
 		wg.Add(1)
 		go func(segmentSender *segment.HTTPClient, wg *sync.WaitGroup) {
 			defer wg.Done()
-			//for batchEvent := range batchEventsQueue {
-			//	//logrus.Infof("processing batch of events %+v", batchEvent)
-			//	//err := segmentSender.SendBatchEvents(batchEvent)
-			//	//if err != nil {
-			//	//	logrus.Errorf("failed to process batch of events %+v: %s", batchEvent, err.Error())
-			//	//} else {
-			//	//	logrus.Infof("successful processing batch of events %+v", batchEvent)
-			//	//}
-			//}
+			for batchEvent := range batchEventsQueue {
+				logrus.Infof("processing batch of events %+v", batchEvent)
+				err := segmentSender.SendBatchEvents(batchEvent)
+				if err != nil {
+					logrus.Errorf("failed to process batch of events %+v: %s", batchEvent, err.Error())
+				} else {
+					logrus.Infof("successful processing batch of events %+v", batchEvent)
+				}
+			}
 		}(segmentSender, &wg)
 	}
-
-	/// TEST
-	//mCol := mongo.ModuleLicenseDAO.ModuleLicenseCollection.Name()
-	//mCursor, err := mongo.ModuleLicenseDAO.ModuleLicenseCollection.Find(ctx, bson.D{})
-	//if err != nil {
-	//	logrus.Errorf("unable to find collection %s: %s", mCol, err.Error())
-	//}
-	//
-	//var modules []core.ModuleLicense
-	//if err := mCursor.All(ctx, &modules); err != nil {
-	//	logrus.Errorf("unable to list collection %s: %s", mCol, err.Error())
-	//}
-	//logrus.Infof("DOOOOOODD \n %+v", modules)
-	//mCursor.Close(ctx)
-
-	mCol := mongo.AccountDAO.AccountCollection.Name()
-	mCursor, err := mongo.AccountDAO.ListWithCursor(ctx)
-	if err != nil {
-		logrus.Errorf("unable to find collection %s: %s", mCol, err.Error())
-	}
-
-	for mCursor.Next(ctx) {
-		var moduleLicense core.Account
-		err := mCursor.Decode(&moduleLicense)
-		if err != nil {
-			logrus.Errorf("unable to decode record for collection %s: %+v: %s", mCol, moduleLicense, err.Error())
-		}
-		logrus.Infof("found in collection %s: %+v", mCol, moduleLicense)
-	}
-	mCursor.Close(ctx)
-
-	/// TEST END
 
 	// process every account
 	collectionName := mongo.ModuleLicenseDAO.ModuleLicenseCollection.Name()
@@ -98,7 +66,7 @@ func RunLicenseProvisionedJob(mongo *mongodb.MongoDb, segmentSender *segment.HTT
 		if err != nil {
 			logrus.Errorf("unable to decode record for collection %s: %+v: %s", collectionName, moduleLicense, err.Error())
 		}
-		//logrus.Infof("found in collection %s: %+v", collectionName, moduleLicense)
+		logrus.Infof("found in collection %s: %+v", collectionName, moduleLicense)
 		createLicenseGroupEvent(moduleLicense, &batchEvents, batchEventsQueue)
 	}
 

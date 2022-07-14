@@ -23,7 +23,7 @@ func NewAccountDAO(mongoDb *mongo.Database) (*AccountDAO, error) {
 }
 
 //func (a *AccountDAO) Create(ctx context.Context, account *core.Account) (*core.Account, error) {
-//	_, err := a.EnvironmentGroupNGDAO.InsertOne(ctx, account)
+//	_, err := a.AccountCollection.InsertOne(ctx, account)
 //	if err != nil {
 //		logrus.WithError(err).Errorf("failed to insert document in Mongo for account %s", account.GetAccountIdAsString())
 //		return nil, fmt.Errorf("failed to create application %s", account.GetAccountIdAsString())
