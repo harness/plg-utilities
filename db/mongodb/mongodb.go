@@ -11,13 +11,14 @@ import (
 )
 
 type MongoDb struct {
-	cgClient         *mongo.Client
-	cgDatabase       *mongo.Database
-	ngClient         *mongo.Client
-	ngDatabase       *mongo.Database
-	AccountDAO       *harness.AccountDAO
-	UserDAO          *harness.UserDAO
-	ModuleLicenseDAO *harness.ModuleLicenseDAO
+	cgClient              *mongo.Client
+	cgDatabase            *mongo.Database
+	ngClient              *mongo.Client
+	ngDatabase            *mongo.Database
+	AccountDAO            *harness.AccountDAO
+	UserDAO               *harness.UserDAO
+	ModuleLicenseDAO      *harness.ModuleLicenseDAO
+	EnvironmentGroupNGDAO *harness.EnvironmentGroupNGDAO
 }
 
 func New(cgConf config.CGMongoDbConf, ngConf config.NGMongoDbConf) (*MongoDb, error) {
@@ -68,11 +69,17 @@ func New(cgConf config.CGMongoDbConf, ngConf config.NGMongoDbConf) (*MongoDb, er
 		return nil, err
 	}
 
+	envGroupDAO, err := harness.NewEnvironmentGroupNGDAO(ngDatabase)
+	if err != nil {
+		return nil, err
+	}
+
 	return &MongoDb{
-		cgClient:         cgClient,
-		cgDatabase:       cgDatabase,
-		AccountDAO:       accountDAO,
-		UserDAO:          userDAO,
-		ModuleLicenseDAO: moduleLicenseDAO,
+		cgClient:              cgClient,
+		cgDatabase:            cgDatabase,
+		AccountDAO:            accountDAO,
+		UserDAO:               userDAO,
+		ModuleLicenseDAO:      moduleLicenseDAO,
+		EnvironmentGroupNGDAO: envGroupDAO,
 	}, nil
 }

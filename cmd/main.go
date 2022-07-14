@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	stackdriver "github.com/TV4/logrus-stackdriver-formatter"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
@@ -21,6 +22,8 @@ func main() {
 	if err != nil {
 		logrus.Fatalf("could not load configuartion, error: %s", err.Error())
 	}
+
+	fmt.Printf("%+v\n", config)
 
 	// run jobs
 	if config.Mode == "ANALYTICS_USER_JOB" {
