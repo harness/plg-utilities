@@ -62,7 +62,7 @@ func New(cgConf config.CGMongoDbConf, ngConf config.NGMongoDbConf) (*MongoDb, er
 	}
 
 	logrus.Info("successfully pinged ng mongo server")
-	ngDatabase := cgClient.Database(ngConf.DbName)
+	ngDatabase := ngClient.Database(ngConf.DbName)
 
 	moduleLicenseDAO, err := harness.NewModuleLicenseDAO(ngDatabase)
 	if err != nil {
