@@ -65,6 +65,7 @@ func RunLicenseProvisionedJob(mongo *mongodb.MongoDb, segmentSender *segment.HTT
 		err := moduleLicenseCursor.Decode(&moduleLicense)
 		if err != nil {
 			logrus.Errorf("unable to decode record for collection %s: %+v: %s", collectionName, moduleLicense, err.Error())
+			continue
 		}
 		logrus.Infof("found in collection %s: %+v", collectionName, moduleLicense)
 		createLicenseGroupEvent(moduleLicense, &batchEvents, batchEventsQueue)

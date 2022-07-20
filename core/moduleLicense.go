@@ -16,15 +16,15 @@ type (
 
 		//CD
 		CDLicenseType    string `json:"cdLicenseType,omitempty" bson:"cdLicenseType,omitempty"`
-		ServiceInstances string `json:"serviceInstances,omitempty" bson:"serviceInstances,omitempty"`
+		ServiceInstances int    `json:"serviceInstances,omitempty" bson:"serviceInstances,omitempty"`
 		Workloads        int    `json:"workloads,omitempty" bson:"workloads,omitempty"`
 
 		//CI
 		NumberOfCommitters int `json:"numberOfCommitters,omitempty" bson:"numberOfCommitters,omitempty"`
 
 		//FF-CF
-		NumberOfUsers      int64 `json:"numberOfUsers,omitempty" bson:"numberOfUsers,omitempty"`
-		NumberOfClientMAUs int   `json:"numberOfClientMAUs,omitempty" bson:"numberOfClientMAUs,omitempty"`
+		NumberOfUsers      int   `json:"numberOfUsers,omitempty" bson:"numberOfUsers,omitempty"`
+		NumberOfClientMAUs int64 `json:"numberOfClientMAUs,omitempty" bson:"numberOfClientMAUs,omitempty"`
 
 		//CCM-CE
 		SpendLimit int64 `json:"spendLimit,omitempty" bson:"spendLimit,omitempty"`
