@@ -12,6 +12,8 @@ import (
 )
 
 const (
+	CD_LICENSE_UNIT                          = "cd_license_unit"
+	CD_LICENSE_WORKLOADS_PROVISIONED         = "cd_license_workloads_provisioned"
 	CD_LICENSE_SERVICES_PROVISIONED          = "cd_license_services_provisioned"
 	CD_LICENSE_SERVICE_INSTANCES_PROVISIONED = "cd_license_service_instances_provisioned"
 	CI_LICENSE_DEVELOPERS_PROVISIONED        = "ci_license_developers_provisioned"
@@ -27,7 +29,10 @@ const (
 	CF = "CF"
 	CE = "CE"
 
-	UNDEFINED = "Undefined"
+	SERVICES_KEY           = "Services"
+	SERVICES_INSTANCES_KEY = "Service Instances"
+	CUSTOM                 = "Custom"
+	UNDEFINED              = "Undefined"
 )
 
 func RunLicenseProvisionedJob(mongo *mongodb.MongoDb, segmentSender *segment.HTTPClient) error {
@@ -114,14 +119,19 @@ func flush(batchEvents *[]analytics.Message, queue chan []analytics.Message) {
 func getTraits(moduleLicense core.ModuleLicense, accountId string) map[string]interface{} {
 	traits := map[string]interface{}{"group_id": accountId, "group_type": "Account"}
 	if moduleLicense.ModuleType == CD {
-		traits[CD_LICENSE_SERVICES_PROVISIONED] = UNDEFINED
-		traits[CD_LICENSE_SERVICE_INSTANCES_PROVISIONED] = UNDEFINED
-
-		switch moduleLicense.CDLicenseType {
-		case SERVICES:
-			traits[CD_LICENSE_SERVICES_PROVISIONED] = moduleLicense.Workloads
-		case SERVICES_INSTANCES:
-			traits[CD_LICENSE_SERVICE_INSTANCES_PROVISIONED] = moduleLicense.ServiceInstances
+		if moduleLicense.Status == "ACTIVE" {
+			traits[CD_LICENSE_WORKLOADS_PROVISIONED] = moduleLicense.Workloads
+			switch moduleLicense.CDLicenseType {
+			case SERVICES:
+				traits[CD_LICENSE_UNIT] = SERVICES_KEY
+			case SERVICES_INSTANCES:
+				traits[CD_LICENSE_UNIT] = SERVICES_INSTANCES_KEY
+			default:
+				traits[CD_LICENSE_UNIT] = CUSTOM
+			}
+		} else {
+			traits[CD_LICENSE_WORKLOADS_PROVISIONED] = UNDEFINED
+			traits[CD_LICENSE_UNIT] = UNDEFINED
 		}
 	}
 
