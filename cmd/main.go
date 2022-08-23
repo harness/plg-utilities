@@ -9,8 +9,9 @@ import (
 	. "plg-utilities/config"
 	"plg-utilities/cronjobs"
 	"plg-utilities/db/mongodb"
-	"plg-utilities/jobs"
+	job "plg-utilities/jobs"
 	"plg-utilities/telemetry/segment"
+	"strings"
 )
 
 func main() {
@@ -25,18 +26,31 @@ func main() {
 
 	fmt.Printf("%+v\n", config)
 
-	// run jobs
-	if config.Mode == "ANALYTICS_USER_JOB" {
-		jobs.RunJobs(&config)
+	jobsToDo := strings.Split(config.Mode, ",")
+	jobs := make(map[string]bool)
+	for _, job := range jobsToDo {
+		fmt.Printf("%s\n", job)
+		jobs[job] = true
 	}
 
-	if config.Mode == "LICENSE_PROVISIONED_CRON" {
-		mongo, err := mongodb.New(config.CGMongoDb, config.NGMongoDb)
-		if err != nil {
-			logrus.Fatalf("unable to connect to mongo db: %s", err.Error())
-		}
-		segmentSender := segment.NewHTTPClient(config.Segment)
+	mongo, err := mongodb.New(config.CGMongoDb, config.NGMongoDb)
+	if err != nil {
+		logrus.Fatalf("unable to connect to mongo db: %s", err.Error())
+	}
+
+	segmentSender := segment.NewHTTPClient(config.Segment)
+
+	if jobs["LICENSE_PROVISIONED_CRON"] {
 		cronjobs.RunLicenseProvisionedJob(mongo, segmentSender)
+	}
+
+	if jobs["ACCOUNT_TRAITS_CRON"] {
+		fmt.Printf("ADASDASDAS\n")
+		cronjobs.RunAccountTraitsJob(mongo, segmentSender)
+	}
+
+	if jobs["ANALYTICS_USER_JOB"] {
+		job.RunJobs(&config)
 	}
 }
 
