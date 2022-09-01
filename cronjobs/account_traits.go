@@ -2,14 +2,15 @@ package cronjobs
 
 import (
 	"context"
-	"github.com/sirupsen/logrus"
-	"go.mongodb.org/mongo-driver/bson"
-	"gopkg.in/segmentio/analytics-go.v3"
 	"plg-utilities/core"
 	"plg-utilities/db/mongodb"
 	"plg-utilities/telemetry/segment"
 	"sync"
 	"time"
+
+	"github.com/sirupsen/logrus"
+	"go.mongodb.org/mongo-driver/bson"
+	"gopkg.in/segmentio/analytics-go.v3"
 )
 
 func RunAccountTraitsJob(mongo *mongodb.MongoDb, segmentSender *segment.HTTPClient) error {
@@ -91,8 +92,11 @@ func RunAccountTraitsJob(mongo *mongodb.MongoDb, segmentSender *segment.HTTPClie
 
 func createAccountGroupEvent(account core.Account, moduleLicenses []core.ModuleLicense, batchEvents *[]analytics.Message, queue chan []analytics.Message) {
 	accountId := account.Id
+	//accoutCreated := account.createdAt
 	isPaid := isAccountPaid(moduleLicenses)
-	traits := map[string]interface{}{"group_id": accountId, "group_type": "Account", "is_paid": isPaid}
+	traits := map[string]interface{}{"group_id": accountId, "group_type": "Account", "is_paid": isPaid, "created_at": account.CreatedAt}
+	//traits := map[string]interface{}{"group_id": accountId, "group_type": "Account", "is_paid": isPaid}
+
 	event := analytics.Group{
 		UserId:       segment.ACCOUNT_ANALYSIS_USER_PREFIX + accountId,
 		GroupId:      accountId,
