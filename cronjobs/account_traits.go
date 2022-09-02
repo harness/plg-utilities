@@ -2,15 +2,22 @@ package cronjobs
 
 import (
 	"context"
+	"fmt"
 	"plg-utilities/core"
 	"plg-utilities/db/mongodb"
 	"plg-utilities/telemetry/segment"
+	"strconv"
 	"sync"
 	"time"
 
 	"github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
 	"gopkg.in/segmentio/analytics-go.v3"
+)
+
+const (
+	ISOformat      = "20060102"
+	ISOMonthFormat = "200601"
 )
 
 func RunAccountTraitsJob(mongo *mongodb.MongoDb, segmentSender *segment.HTTPClient) error {
@@ -92,10 +99,9 @@ func RunAccountTraitsJob(mongo *mongodb.MongoDb, segmentSender *segment.HTTPClie
 
 func createAccountGroupEvent(account core.Account, moduleLicenses []core.ModuleLicense, batchEvents *[]analytics.Message, queue chan []analytics.Message) {
 	accountId := account.Id
-	//accoutCreated := account.createdAt
 	isPaid := isAccountPaid(moduleLicenses)
-	traits := map[string]interface{}{"group_id": accountId, "group_type": "Account", "is_paid": isPaid, "created_at": account.CreatedAt}
-	//traits := map[string]interface{}{"group_id": accountId, "group_type": "Account", "is_paid": isPaid}
+	created_at, created_at_week, created_at_month := createdAtInfo(account.CreatedAt)
+	traits := map[string]interface{}{"group_id": accountId, "group_type": "Account", "is_paid": isPaid, "created_at": created_at, "created_at_week": created_at_week, "created_at_month": created_at_month}
 
 	event := analytics.Group{
 		UserId:       segment.ACCOUNT_ANALYSIS_USER_PREFIX + accountId,
@@ -115,4 +121,23 @@ func isAccountPaid(moduleLicenses []core.ModuleLicense) bool {
 		}
 	}
 	return false
+}
+
+func createdAtInfo(timeStamp int64) (created_at string, created_at_week string, created_at_month string) {
+
+	fmt.Println("Original time stamp is: ", timeStamp)
+	t := time.Unix(0, timeStamp*int64(time.Millisecond))
+	fmt.Println("Converted time is: ", t)
+
+	created_at = t.Format(ISOformat)
+	fmt.Println("The formatted YYYYMMDD created_at is", created_at)
+
+	year, week := t.ISOWeek()
+	created_at_week = strconv.Itoa(year) + "W" + strconv.Itoa(week)
+	fmt.Println("The formatted YYYYWww created_at_week is ", created_at_week)
+
+	created_at_month = t.Format(ISOMonthFormat)
+	fmt.Println("The formatted YYYYMM created_month is ", created_at_month)
+
+	return created_at, created_at_week, created_at_month
 }
