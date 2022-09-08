@@ -12,6 +12,7 @@ type (
 		LicenseInfo    LicenseInfo `json:"licenseInfo,omitempty" bson:"licenseInfo,omitempty"`
 		//EncryptedLicenseInfo primitive.Binary `json:"encryptedLicenseInfo,omitempty" bson:"encryptedLicenseInfo,omitempty"`
 		DefaultExperience string `json:"defaultExperience,omitempty" bson:"defaultExperience,omitempty"`
+		CreatedAt         int64  `json:"createdAt,omitempty" bson:"createdAt,omitempty"`
 	}
 
 	LicenseInfo struct {
