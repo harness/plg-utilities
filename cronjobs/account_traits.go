@@ -101,9 +101,11 @@ func createAccountGroupEvent(account core.Account, moduleLicenses []core.ModuleL
 	accountId := account.Id
 	isPaid := isAccountPaid(moduleLicenses)
 	created_at, created_at_week, created_at_month := createdAtInfo(account.CreatedAt)
-	hotjar_link := "https%3A%2F%2Finsights.hotjar.com%2Fsites%2F2868172%2Fworkspaces%2F2461812%2Fplaybacks%2Flist%3Ffilters%3D%7B%22AND%22%3A%5B%7B%22DAYS_AGO%22%3A%7B%22created%22%3A30%7D%7D%2C%7B%22EQUAL%22%3A%7B%22user_attributes.str.accountId%22%3A%22" + accountId + "%22%7D%7D%5D%7D%26sort_by%3D-created"
+	hotjar_link := "https://insights.hotjar.com/sites/2868172/workspaces/2461812/playbacks/list?filters=%7B%22AND%22:%5B%7B%22DAYS_AGO%22:%7B%22created%22:30%7D%7D%2C%7B%22EQUAL%22:%7B%22user_attributes.str.accountId%22:%22" + accountId + "%22%7D%7D%5D%7D&sort_by=-created"
 
-	traits := map[string]interface{}{"group_id": accountId, "group_type": "Account", "is_paid": isPaid, "created_at": created_at, "created_at_week": created_at_week, "created_at_month": created_at_month, "hotjar_link": hotjar_link, "account_state": account.LicenseInfo.AccountStatus, "harness_cluster_id": clusterID}
+	traits := map[string]interface{}{"group_id": accountId, "group_type": "Account", "is_paid": isPaid,
+		"created_at": created_at, "created_at_week": created_at_week, "created_at_month": created_at_month,
+		"hotjar_link": hotjar_link, "account_state": account.LicenseInfo.AccountStatus, "harness_cluster_id": clusterID}
 
 	event := analytics.Group{
 		UserId:       segment.ACCOUNT_ANALYSIS_USER_PREFIX + accountId,
