@@ -101,9 +101,11 @@ func createAccountGroupEvent(account core.Account, moduleLicenses []core.ModuleL
 	accountId := account.Id
 	isPaid := isAccountPaid(moduleLicenses)
 	createdAt, createdAtWeek, createdAtMonth := createdAtInfo(account.CreatedAt)
+	hotjar_link := "https://insights.hotjar.com/sites/2868172/workspaces/2461812/playbacks/list?filters=%7B%22AND%22:%5B%7B%22DAYS_AGO%22:%7B%22created%22:30%7D%7D%2C%7B%22EQUAL%22:%7B%22user_attributes.str.accountId%22:%22" + accountId + "%22%7D%7D%5D%7D&sort_by=-created"
+
 	traits := map[string]interface{}{"group_id": accountId, "group_type": "Account", "is_paid": isPaid,
 		"created_at": createdAt, "created_at_week": createdAtWeek, "created_at_month": createdAtMonth,
-		"account_state": account.LicenseInfo.AccountStatus, "harness_cluster_id": clusterID}
+		"hotjar_link": hotjar_link, "account_state": account.LicenseInfo.AccountStatus, "harness_cluster_id": clusterID}
 
 	event := analytics.Group{
 		UserId:       segment.ACCOUNT_ANALYSIS_USER_PREFIX + accountId,
