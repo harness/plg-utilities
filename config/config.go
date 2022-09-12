@@ -7,6 +7,7 @@ type (
 		NGMongoDb NGMongoDbConf `mapstructure:",squash"`
 		Segment   SegmentConf   `mapstructure:",squash"`
 		Mode      string        `mapstructure:"MODE" default:"LICENSE_PROVISIONED_CRON"`
+		ClusterID string        `mapstructure:"CLUSTER_ID" default:"DEV"`
 	}
 
 	CGMongoDbConf struct {

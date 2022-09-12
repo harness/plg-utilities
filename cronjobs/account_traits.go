@@ -20,7 +20,7 @@ const (
 	ISOMonthFormat = "200601"
 )
 
-func RunAccountTraitsJob(mongo *mongodb.MongoDb, segmentSender *segment.HTTPClient) error {
+func RunAccountTraitsJob(mongo *mongodb.MongoDb, segmentSender *segment.HTTPClient, clusterID string) error {
 	ctx := context.Background()
 	var batchEvents []analytics.Message
 	batchEventsQueue := make(chan []analytics.Message, 100)
@@ -80,7 +80,7 @@ func RunAccountTraitsJob(mongo *mongodb.MongoDb, segmentSender *segment.HTTPClie
 		//}
 
 		logrus.Infof("found in collection %s: %+v", collectionName, account)
-		createAccountGroupEvent(account, moduleLicenses, &batchEvents, batchEventsQueue)
+		createAccountGroupEvent(account, moduleLicenses, &batchEvents, batchEventsQueue, clusterID)
 	}
 
 	// flush batch events if there is any left
@@ -97,11 +97,13 @@ func RunAccountTraitsJob(mongo *mongodb.MongoDb, segmentSender *segment.HTTPClie
 	return nil
 }
 
-func createAccountGroupEvent(account core.Account, moduleLicenses []core.ModuleLicense, batchEvents *[]analytics.Message, queue chan []analytics.Message) {
+func createAccountGroupEvent(account core.Account, moduleLicenses []core.ModuleLicense, batchEvents *[]analytics.Message, queue chan []analytics.Message, clusterID string) {
 	accountId := account.Id
 	isPaid := isAccountPaid(moduleLicenses)
-	created_at, created_at_week, created_at_month := createdAtInfo(account.CreatedAt)
-	traits := map[string]interface{}{"group_id": accountId, "group_type": "Account", "is_paid": isPaid, "created_at": created_at, "created_at_week": created_at_week, "created_at_month": created_at_month}
+	createdAt, createdAtWeek, createdAtMonth := createdAtInfo(account.CreatedAt)
+	traits := map[string]interface{}{"group_id": accountId, "group_type": "Account", "is_paid": isPaid,
+		"created_at": createdAt, "created_at_week": createdAtWeek, "created_at_month": createdAtMonth,
+		"account_state": account.LicenseInfo.AccountStatus, "harness_cluster_id": clusterID}
 
 	event := analytics.Group{
 		UserId:       segment.ACCOUNT_ANALYSIS_USER_PREFIX + accountId,

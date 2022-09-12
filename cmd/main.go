@@ -45,8 +45,7 @@ func main() {
 	}
 
 	if jobs["ACCOUNT_TRAITS_CRON"] {
-		fmt.Printf("ADASDASDAS\n")
-		cronjobs.RunAccountTraitsJob(mongo, segmentSender)
+		cronjobs.RunAccountTraitsJob(mongo, segmentSender, config.ClusterID)
 	}
 
 	if jobs["ANALYTICS_USER_JOB"] {
