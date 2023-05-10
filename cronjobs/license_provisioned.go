@@ -20,6 +20,7 @@ const (
 	FF_LICENSE_DEVELOPERS_PROVISIONED        = "ff_license_developers_provisioned"
 	FF_LICENSE_MAU_PROVISIONED               = "ff_license_mau_provisioned"
 	CCM_LICENSE_CLOUD_SPEND_PROVISIONED      = "ccm_license_cloud_spend_provisioned"
+	SRM_LICENSE_NUMBER_OF_SERVICES_PROVISIONED      = "srm_license_number_of_services_provisioned"
 
 	CD                 = "CD"
 	SERVICES           = "SERVICES"
@@ -28,6 +29,7 @@ const (
 	CI = "CI"
 	CF = "CF"
 	CE = "CE"
+	SRM = "SRM"
 
 	SERVICES_KEY           = "Services"
 	SERVICES_INSTANCES_KEY = "Service Instances"
@@ -146,6 +148,10 @@ func getTraits(moduleLicense core.ModuleLicense, accountId string) map[string]in
 
 	if moduleLicense.ModuleType == CE {
 		traits[CCM_LICENSE_CLOUD_SPEND_PROVISIONED] = moduleLicense.SpendLimit
+	}
+
+	if moduleLicense.ModuleType == SRM {
+		traits[SRM_LICENSE_NUMBER_OF_SERVICES_PROVISIONED] = moduleLicense.NumberOfServices
 	}
 
 	return traits
