@@ -51,6 +51,7 @@ func main() {
 	if jobs["ANALYTICS_USER_JOB"] {
 		job.RunJobs(&config)
 	}
+
 }
 
 func initLog() {
