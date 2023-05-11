@@ -28,5 +28,8 @@ type (
 
 		//CCM-CE
 		SpendLimit int64 `json:"spendLimit,omitempty" bson:"spendLimit,omitempty"`
+
+		//SRM
+		NumberOfServices int `json:"numberOfServices,omitempty" bson:"numberOfServices,omitempty"`
 	}
 )
