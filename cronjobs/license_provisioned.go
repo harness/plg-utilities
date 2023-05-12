@@ -12,24 +12,29 @@ import (
 )
 
 const (
-	CD_LICENSE_UNIT                          = "cd_license_unit"
-	CD_LICENSE_WORKLOADS_PROVISIONED         = "cd_license_workloads_provisioned"
-	CD_LICENSE_SERVICES_PROVISIONED          = "cd_license_services_provisioned"
-	CD_LICENSE_SERVICE_INSTANCES_PROVISIONED = "cd_license_service_instances_provisioned"
-	CI_LICENSE_DEVELOPERS_PROVISIONED        = "ci_license_developers_provisioned"
-	FF_LICENSE_DEVELOPERS_PROVISIONED        = "ff_license_developers_provisioned"
-	FF_LICENSE_MAU_PROVISIONED               = "ff_license_mau_provisioned"
-	CCM_LICENSE_CLOUD_SPEND_PROVISIONED      = "ccm_license_cloud_spend_provisioned"
+	CD_LICENSE_UNIT                                 = "cd_license_unit"
+	CD_LICENSE_WORKLOADS_PROVISIONED                = "cd_license_workloads_provisioned"
+	CD_LICENSE_SERVICES_PROVISIONED                 = "cd_license_services_provisioned"
+	CD_LICENSE_SERVICE_INSTANCES_PROVISIONED        = "cd_license_service_instances_provisioned"
+	CI_LICENSE_DEVELOPERS_PROVISIONED               = "ci_license_developers_provisioned"
+	FF_LICENSE_DEVELOPERS_PROVISIONED               = "ff_license_developers_provisioned"
+	FF_LICENSE_MAU_PROVISIONED                      = "ff_license_mau_provisioned"
+	CCM_LICENSE_CLOUD_SPEND_PROVISIONED             = "ccm_license_cloud_spend_provisioned"
 	SRM_LICENSE_NUMBER_OF_SERVICES_PROVISIONED      = "srm_license_number_of_services_provisioned"
+	CHAOS_LICENSE_TOTAL_EXPERIMENT_RUNS_PROVISIONED = "chaos_license_total_experiment_runs_provisioned"
+
+	STO_LICENSE_NUMBER_OF_DEVELOPERS_PROVISIONED = "sto_license_number_of_developers_provisioned"
 
 	CD                 = "CD"
 	SERVICES           = "SERVICES"
 	SERVICES_INSTANCES = "SERVICE_INSTANCES"
 
-	CI = "CI"
-	CF = "CF"
-	CE = "CE"
-	SRM = "SRM"
+	CI    = "CI"
+	CF    = "CF"
+	CE    = "CE"
+	SRM   = "SRM"
+	CHAOS = "CHAOS"
+	STO   = "STO"
 
 	SERVICES_KEY           = "Services"
 	SERVICES_INSTANCES_KEY = "Service Instances"
@@ -152,6 +157,14 @@ func getTraits(moduleLicense core.ModuleLicense, accountId string) map[string]in
 
 	if moduleLicense.ModuleType == SRM {
 		traits[SRM_LICENSE_NUMBER_OF_SERVICES_PROVISIONED] = moduleLicense.NumberOfServices
+	}
+
+	if moduleLicense.ModuleType == CHAOS {
+		traits[CHAOS_LICENSE_TOTAL_EXPERIMENT_RUNS_PROVISIONED] = moduleLicense.NumberOfServices
+	}
+
+	if moduleLicense.ModuleType == STO {
+		traits[STO_LICENSE_NUMBER_OF_DEVELOPERS_PROVISIONED] = moduleLicense.NumberOfDevelopers
 	}
 
 	return traits

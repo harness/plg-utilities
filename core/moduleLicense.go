@@ -31,5 +31,11 @@ type (
 
 		//SRM
 		NumberOfServices int `json:"numberOfServices,omitempty" bson:"numberOfServices,omitempty"`
+
+		//CHAOS
+		TotalChaosExperimentRuns int `json:"totalChaosExperimentRuns,omitempty" bson:"totalChaosExperimentRuns,omitempty"`
+
+		//STO
+		NumberOfDevelopers int `json:"numberOfDevelopers,omitempty" bson:"numberOfDevelopers,omitempty"`
 	}
 )
