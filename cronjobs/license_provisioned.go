@@ -160,7 +160,7 @@ func getTraits(moduleLicense core.ModuleLicense, accountId string) map[string]in
 	}
 
 	if moduleLicense.ModuleType == CHAOS {
-		traits[CHAOS_LICENSE_TOTAL_EXPERIMENT_RUNS_PROVISIONED] = moduleLicense.NumberOfServices
+		traits[CHAOS_LICENSE_TOTAL_EXPERIMENT_RUNS_PROVISIONED] = moduleLicense.TotalChaosExperimentRuns
 	}
 
 	if moduleLicense.ModuleType == STO {
