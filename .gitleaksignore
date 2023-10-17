@@ -1,0 +1,3 @@
+#For More Info: https://github.com/zricethezav/gitleaks/blob/master/.gitleaksignore
+
+#CommitID:FilePath:TypeOfSecret:LineNumber
